@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+
+">
+    <!--配置数据源-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/cg_graduate?useUnicode=yes&amp;characterEncoding=UTF-8"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+        
+        <property name="maxActive" value="10"/>
+        <property name="maxIdle" value="2"/>
+        <property name="maxWait" value="12000"/>
+    </bean>
+
+    <!--配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!--整合mybatis 和 Spring-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--读取数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--读取mybatis.xml-->
+        <property name="configLocation" value="classpath:mybatis.xml"/>
+        <!--加载映射文件-->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+    </bean>
+
+    <!--配置dao-->
+    <!--自动扫面dao包中文件并且将其注入到mybatis中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.edu.chenggong.dao"/>
+    </bean>
+
+    <!--需要回滚的方法-->
+    <tx:advice id="serviceAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <!--当代理的service层中的方法抛出异常的时候才回滚,必须加rollback-for参数-->
+            <tx:method name="add*" propagation="REQUIRED"   rollback-for="java.lang.Exception"/>
+            <tx:method name="insert*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="del*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="remove*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="update*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="modify*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <!--除了上面标识的方法,其他方法全是只读方法-->
+            <tx:method name="*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--启用aop 启用对注解的支持-->
+    <aop:aspectj-autoproxy />
+    <!--&lt;!&ndash; aop日志记录方法 &ndash;&gt;-->
+    <!--<bean class="com.edu.chenggong.aop.LoggerAfter"/>-->
+
+    <!-- 配置哪些类的方法需要进行事务管理 -->
+    <aop:config>
+        <!-- 配置切点表达式  -->
+        <aop:pointcut id="servicePointcut" expression="execution(* com.edu.chenggong.service.*.*(..))"/>
+        <aop:pointcut id="servicePointcutDao" expression="execution( * com.edu.chenggong.dao.*.*(..))"/>
+
+        <aop:advisor pointcut-ref="servicePointcut" advice-ref="serviceAdvice"/>
+        <aop:advisor pointcut-ref="servicePointcutDao" advice-ref="serviceAdvice"/>
+    </aop:config>
+</beans>

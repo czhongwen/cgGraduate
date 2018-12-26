@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.chenggong.dao.IAdminInfoDao">
+    
+    <select id="getAdminInfo" parameterType="AdminInfo" resultType="AdminInfo">
+        select * from admin_info WHERE admin_email=#{adminEmail} AND admin_pass=#{adminPass} limit 1
+    </select>
+
+    <select id="getPower" parameterType="int" resultType="String">
+        SELECT url from power_info WHERE power_id in
+        (
+	      SELECT power_id from roel_power WHERE roel_id in
+	      (
+              SELECT roel_id from admin_roel WHERE admin_id =#{adminId}
+          )
+        )
+    </select>
+
+    <select id="getAdminInfoByCount" parameterType="Map" resultType="AdminInfo">
+        select * from admin_info WHERE 1=1
+        <choose>
+            <when test="beginKeyDate==null and endKeyDate==null and keyWord==null">
+                and 1=1
+            </when>
+            <when test="beginKeyDate!=null and beginKeyDate!='' and keyWord!=null and keyWord!='' and endKeyDate!=null and endKeyDate!=''">
+                AND reg_date BETWEEN #{beginKeyDate} AND #{endKeyDate}
+                AND admin_name LIKE concat('%',#{keyWord},'%')
+            </when>
+
+            <when test="beginKeyDate==null or endKeyDate==null or endKeyDate=='' or beginKeyDate=='' and keyWord!=null and keyWord!=''">
+                AND admin_name LIKE concat('%',#{keyWord},'%')
+            </when>
+
+            <when test="beginKeyDate!=null and beginKeyDate!='' and endKeyDate!=null and endKeyDate!='' and keyWord==null or keyWord=='' ">
+                AND reg_date BETWEEN #{beginKeyDate} AND #{endKeyDate}
+            </when>
+        </choose>
+        limit #{begin},#{pageSize}
+    </select>
+
+    <select id="getAdminInfoCount" parameterType="Map" resultType="int">
+        SELECT count(admin_id) from admin_info WHERE 1=1
+        <choose>
+            <when test="beginKeyDate==null and endKeyDate==null and keyWord==null">
+                and 1=1
+            </when>
+            <when test="beginKeyDate!=null and beginKeyDate!='' and keyWord!=null and keyWord!='' and endKeyDate!=null and endKeyDate!=''">
+                AND reg_date BETWEEN #{beginKeyDate} AND #{endKeyDate}
+                AND admin_name LIKE concat('%',#{keyWord},'%')
+            </when>
+
+            <when test="beginKeyDate==null or endKeyDate==null or endKeyDate=='' or beginKeyDate=='' and keyWord!=null and keyWord!=''">
+                AND admin_name LIKE concat('%',#{keyWord},'%')
+            </when>
+
+            <when test="beginKeyDate!=null and beginKeyDate!='' and endKeyDate!=null and endKeyDate!='' and keyWord==null or keyWord=='' ">
+                AND reg_date BETWEEN #{beginKeyDate} AND #{endKeyDate}
+            </when>
+        </choose>
+    </select>
+
+    <update id="updateAdminInfo" parameterType="AdminInfo">
+        UPDATE admin_info
+        <set>
+            <if test="adminName!=null and adminName!=''">
+                admin_name = #{adminName},
+            </if>
+            <if test="adminSex!=null and adminSex!=''">
+                admin_sex = #{adminSex},
+            </if>
+            <if test="adminPass!=null and adminPass!=''">
+                admin_pass = #{adminPass},
+            </if>
+            <if test="adminAddress!=null and adminAddress!=''">
+                admin_address = #{adminAddress},
+            </if>
+            <if test="adminEmail!=null and adminEmail!=''">
+                admin_email = #{adminEmail},
+            </if>
+            <if test="adminPhone!=null and adminPhone!=''">
+                admin_phone = #{adminPhone},
+            </if>
+            <if test="regDate!=null and regDate!=''">
+                reg_Date = #{regDate},
+            </if>
+            <if test="adminStatus!=null and adminStatus>-1">
+                admin_status = #{adminStatus}
+            </if>
+        </set>
+        <where>
+            admin_id = #{adminId}
+        </where>
+    </update>
+
+    <insert id="addAdminInfo" parameterType="AdminInfo" useGeneratedKeys="true" keyColumn="adminId" keyProperty="adminId">
+        INSERT INTO admin_info (admin_name,admin_sex,admin_pass,admin_address,admin_email,admin_phone,reg_date,admin_status)
+        VALUES (#{adminName},#{adminSex},#{adminPass},#{adminAddress},#{adminEmail},#{adminPhone},#{regDate},1)
+    </insert>
+
+    <select id="getAdminInfoById" parameterType="int" resultType="AdminInfo">
+        SELECT * from admin_info WHERE admin_id = #{adminId}
+    </select>
+</mapper>

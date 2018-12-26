@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.chenggong.dao.IStudentInfoDao">
+
+    <select id="getStudentInfoByCount" parameterType="Map" resultType="StudentInfo">
+       SELECT * from student_info WHERE 1=1
+       <choose>
+          <when test="key!=null and key!=''">
+              AND  stu_name LIKE concat('%',#{key},'%')
+              OR   stu_email LIKE concat('%',#{key},'%')
+              OR   home_address LIKE concat('%',#{key},'%')
+              OR   class_name LIKE concat('%',#{key},'%')
+              OR   profession LIKE concat('%',#{key},'%')
+              OR   work_address LIKE concat('%',#{key},'%')
+              OR   company LIKE concat('%',#{key},'%')
+          </when>
+       </choose>
+        limit #{begin},#{pageSize}
+    </select>
+
+    <insert id="addStudentInfo" parameterType="StudentInfo" useGeneratedKeys="true" keyProperty="stuId" keyColumn="stu_id">
+        INSERT INTO student_info
+        (stu_name,stu_phone,stu_qq,stu_sex,stu_email,home_address,class_name,profession,work_address,salary,company)
+        VALUES
+        (#{stuName},#{stuPhone},#{stuQq},#{stuSex},#{stuEmail},#{homeAddress},#{className},#{profession},#{workAddress},#{salary},#{company})
+    </insert>
+
+    <update id="updateStuInfo" parameterType="StudentInfo">
+        UPDATE student_info
+        <set>
+            <if test="stuName!=null and stuName!=''">
+                stu_name = #{stuName},
+            </if>
+            <if test="stuQq!=null and stuQq!=''">
+                stu_phone = #{stuQq},
+            </if>
+            <if test="stuSex!=null and stuSex!=''">
+                stu_sex = #{stuSex},
+            </if>
+            <if test="stuPhone!=null and stuPhone!=''">
+                stu_phone = #{stuPhone},
+            </if>
+            <if test="stuEmail!=null and stuEmail!=''">
+                stu_email = #{stuEmail},
+            </if>
+            <if test="homeAddress!=null and homeAddress!=''">
+                home_address = #{homeAddress},
+            </if>
+            <if test="className!=null and className!=''">
+                class_name = #{className},
+            </if>
+            <if test="profession!=null and profession!=''">
+                profession = #{profession},
+            </if>
+            <if test="workAddress!=null and workAddress!=''">
+                work_address = #{workAddress},
+            </if>
+            <if test="salary!=null and salary!=''">
+                salary = #{salary},
+            </if>
+            <if test="company!=null and company!=''">
+                company = #{company},
+            </if>
+        </set>
+        WHERE stu_id = #{stuId}
+    </update>
+
+    <select id="getStudentCount" parameterType="Map" resultType="int">
+        SELECT COUNT(stu_id) FROM student_info WHERE 1=1
+        <choose>
+            <when test="key!=null and key!=''">
+                AND  stu_name LIKE concat('%',#{key},'%')
+                OR   stu_email LIKE concat('%',#{key},'%')
+                OR   home_address LIKE concat('%',#{key},'%')
+                OR   class_name LIKE concat('%',#{key},'%')
+                OR   profession LIKE concat('%',#{key},'%')
+                OR   work_address LIKE concat('%',#{key},'%')
+                OR   company LIKE concat('%',#{key},'%')
+            </when>
+        </choose>
+    </select>
+
+    <delete id="delStudentInfoById" parameterType="int" >
+        DELETE FROM student_info WHERE stu_id = #{stuId}
+    </delete>
+
+    <delete id="delStudentInfoByIds" parameterType="int[]">
+        DELETE FROM student_info WHERE stu_id IN
+        <foreach collection="array" open="(" close=")" item="itm" separator=",">
+            #{itm}
+        </foreach>
+    </delete>
+
+    <select id="getStudentInfoById" parameterType="int" resultType="StudentInfo">
+        SELECT * FROM student_info WHERE stu_id = #{stuId}
+    </select>
+</mapper>

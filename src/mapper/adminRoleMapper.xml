@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.edu.chenggong.dao.IAdminRoleDao">
+
+    <insert id="addAdminRole" parameterType="Map" >
+        INSERT INTO admin_roel(admin_id,roel_id)
+        VALUES (#{adminId},#{roleId})
+    </insert>
+
+    <select id="getAllAdminRole" parameterType="Map" resultType="Map">
+        SELECT * from admin_info ai,admin_roel ar,roel_info ri
+        WHERE ai.admin_id = ar.admin_id
+        AND ri.roel_id = ar.roel_id
+        <choose>
+            <when test="beginKeyDate==null and endKeyDate==null and keyWord==null">
+                and 1=1
+            </when>
+            <when test="beginKeyDate!=null and beginKeyDate!='' and keyWord!=null and keyWord!='' and endKeyDate!=null and endKeyDate!=''">
+                AND ai.reg_date BETWEEN #{beginKeyDate} AND #{endKeyDate}
+                AND ai.admin_name LIKE concat('%',#{keyWord},'%')
+            </when>
+            <when test="beginKeyDate==null or endKeyDate==null or endKeyDate=='' or beginKeyDate=='' and keyWord!=null and keyWord!=''">
+                AND ai.admin_name LIKE concat('%',#{keyWord},'%')
+            </when>
+            <when test="beginKeyDate!=null and beginKeyDate!='' and endKeyDate!=null and endKeyDate!='' and keyWord==null or keyWord=='' ">
+                AND ai.reg_date BETWEEN #{beginKeyDate} AND #{endKeyDate}
+            </when>
+        </choose>
+        limit #{begin},#{pageSize}
+    </select>
+
+    <select id="getAllAdminRoleByAdminId" parameterType="int" resultType="Map">
+        SELECT * from admin_info ai,admin_roel ar,roel_info ri
+        WHERE ai.admin_id = ar.admin_id
+        AND ri.roel_id = ar.roel_id
+        AND ai.admin_id = #{adminId}
+    </select>
+
+    <select id="getAllRole" resultType="Map">
+        SELECT * FROM roel_info
+    </select>
+
+    <update id="updateAdminRole" parameterType="Map" >
+        UPDATE admin_roel SET roel_id = #{roleId} WHERE admin_id = #{adminId}
+    </update>
+</mapper>
